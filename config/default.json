@@ -1,5 +1,6 @@
 {
     "mqtt": {
+	"enabled":false,
         "username" : "USERNAME",
         "key":"API_KEY",
         "protocol":"mqtts",

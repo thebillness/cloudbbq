@@ -32,23 +32,36 @@ notificationConfig.targets = [
     program.probe6]
 notificationConfig.set = [true,true,true,true,true,true]
 
-const googleConfig = {
-    auth: {
-        keyFilePath: path.resolve(__dirname,notificationConfig.googleAssistant.oAuthSecretsFile),
-        // where you want the tokens to be saved
-        // will create the directory if not already there
-        savedTokensPath: path.resolve(__dirname, 'config/tokens.json'),
-    }
+
+if (notificationConfig.googleAssistant.enabled){
+	const googleConfig = {
+	    auth: {
+        	keyFilePath: path.resolve(__dirname,notificationConfig.googleAssistant.oAuthSecretsFile),
+	        // where you want the tokens to be saved
+        	// will create the directory if not already there
+	        savedTokensPath: path.resolve(__dirname, 'config/tokens.json'),
+	    }
+	}
+	const assistant = new GoogleAssistant(googleConfig.auth)
 }
-const assistant = notificationConfig.googleAssistant.enabled ? new GoogleAssistant(googleConfig.auth) : null
+else {
+	const assistant = null
+	console.log('Google Assistant disabled.')
+}
 
-var mqttConnString = `${mqttConfig.protocol}://${mqttConfig.username}:${mqttConfig.key}@${mqttConfig.url}`
-var client = mqtt.connect(mqttConnString)
+if (mqttConfig.enabled) {
+	var mqttConnString = `${mqttConfig.protocol}://${mqttConfig.username}:${mqttConfig.key}@${mqttConfig.url}`
+	var client = mqtt.connect(mqttConnString)
 
-client.on('connect',()=>{
-    mqttConnected = true
-})
+	client.on('connect',()=>{
+		mqttConnected = true
+	})
+}
+else {
+	console.log('MQTT disabled.')
+}
 
+console.log('Please power on thermometer. Scanning for iBBQ...')
 noble.startScanning()
 
 var pairCharacteristic, tempCharacteristic, commandCharacteristic
@@ -141,10 +154,10 @@ function handleTempEvent(data) {
             else {
                 probeTemps.push(null)
             }
-            
+
         }
         console.log(`Probes 1: ${probeTemps[0]}F 2: ${probeTemps[1]}F 3: ${probeTemps[2]}F `+
-            `4: ${probeTemps[3]}F 5: ${probeTemps[4]}F 5: ${probeTemps[5]}F`)
+            `4: ${probeTemps[3]}F 5: ${probeTemps[4]}F 6: ${probeTemps[5]}F`)
         if (mqttConnected){
             msgCount++
             for (var j = 0; j < 6; j++){
@@ -153,7 +166,7 @@ function handleTempEvent(data) {
                         value:probeTemps[j]
                     }))
                 }
-            }            
+            }
         }
 
         if (notificationConfig.googleAssistant.enabled){
