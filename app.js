@@ -32,23 +32,26 @@ notificationConfig.targets = [
     program.probe6]
 notificationConfig.set = [true,true,true,true,true,true]
 
-const googleConfig = {
-    auth: {
-        keyFilePath: path.resolve(__dirname,notificationConfig.googleAssistant.oAuthSecretsFile),
-        // where you want the tokens to be saved
-        // will create the directory if not already there
-        savedTokensPath: path.resolve(__dirname, 'config/tokens.json'),
-    }
-}
-const assistant = notificationConfig.googleAssistant.enabled ? new GoogleAssistant(googleConfig.auth) : null
+//const googleConfig = {
+//    auth: {
+//        keyFilePath: path.resolve(__dirname,notificationConfig.googleAssistant.oAuthSecretsFile),
+//        // where you want the tokens to be saved
+//        // will create the directory if not already there
+//        savedTokensPath: path.resolve(__dirname, 'config/tokens.json'),
+//    }
+//}
+//const assistant = notificationConfig.googleAssistant.enabled ? new GoogleAssistant(googleConfig.auth) : null
 
 var mqttConnString = `${mqttConfig.protocol}://${mqttConfig.username}:${mqttConfig.key}@${mqttConfig.url}`
+console.log('Connecting to MQTT...')
 var client = mqtt.connect(mqttConnString)
 
 client.on('connect',()=>{
+    console.log('Connected')
     mqttConnected = true
 })
 
+console.log('Scanning for iBBQ...')
 noble.startScanning()
 
 var pairCharacteristic, tempCharacteristic, commandCharacteristic
@@ -57,7 +60,7 @@ noble.on('discover',(peripheral)=>{
 
     // Check out this sample code: https://github.com/noble/noble/issues/179
     if (peripheral.advertisement.localName === 'iBBQ'){
-        console.log('iBBQ Discovered')
+        console.log('iBBQ Discovered!')
         noble.stopScanning()
 
         peripheral.on('disconnect', () => {
